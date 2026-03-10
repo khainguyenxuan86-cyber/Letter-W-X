@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tap W and X</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;800&display=swap" rel="stylesheet">
+
+<style>
+body{
+    margin:0;
+    overflow:hidden;
+    font-family:'Montserrat', sans-serif;
+    background:linear-gradient(to top,#a8e6ff,#ffffff);
+    text-align:center;
+}
+
+h1{
+    position:absolute;
+    top:15px;
+    width:100%;
+    font-size:28px;
+    color:#ff4da6;
+    z-index:2;
+}
+
+/* bảng theo dõi chữ */
+.targets{
+    position:absolute;
+    top:65px;
+    right:20px;
+    font-size:26px;
+    font-weight:800;
+    color:#333;
+    background:white;
+    padding:10px 18px;
+    border-radius:14px;
+    box-shadow:0 6px 18px rgba(0,0,0,0.2);
+    z-index:5;
+}
+
+.game{
+    position:relative;
+    width:100vw;
+    height:100vh;
+    overflow:hidden;
+}
+
+.balloon{
+    position:absolute;
+    bottom:-120px;
+    width:85px;
+    height:85px;
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:32px;
+    color:white;
+    font-weight:800;
+    cursor:pointer;
+    animation:float linear forwards;
+    box-shadow:0 10px 20px rgba(0,0,0,0.2);
+    user-select:none;
+}
+
+.balloon::after{
+    content:"";
+    position:absolute;
+    bottom:-20px;
+    width:2px;
+    height:25px;
+    background:#777;
+}
+
+@keyframes float{
+    from{transform:translateY(0);}
+    to{transform:translateY(-120vh);}
+}
+
+.pop{
+    animation:none;
+    transform:scale(0);
+    transition:0.2s;
+}
+
+.win-screen{
+    position:fixed;
+    inset:0;
+    background:rgba(255,255,255,0.95);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    font-size:40px;
+    font-weight:800;
+    color:#ff1493;
+    display:none;
+    z-index:10;
+}
+
+.play-again{
+    margin-top:20px;
+    padding:12px 25px;
+    font-size:20px;
+    border:none;
+    border-radius:30px;
+    background:#ff69b4;
+    color:white;
+    cursor:pointer;
+}
+
+.firework{
+    position:absolute;
+    font-size:50px;
+    animation:boom 1s ease-out forwards;
+}
+
+@keyframes boom{
+    from{transform:scale(0);opacity:1;}
+    to{transform:scale(1.5);opacity:0;}
+}
+</style>
+</head>
+
+<body>
+
+<h1>🎈 Tap W and X 🎈</h1>
+
+<div class="targets">
+W <span id="wStatus">❌</span><br>
+X <span id="xStatus">❌</span>
+</div>
+
+<div class="game" id="game"></div>
+
+<div class="win-screen" id="winScreen">
+🎉 GREAT JOB! 🎉
+<button class="play-again" onclick="restartGame()">Play Again</button>
+</div>
+
+<script>
+
+let gameOver=false
+let letters="ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+let balloonInterval
+
+let foundW=false
+let foundX=false
+
+function randomColor(){
+const colors=["#ff6b6b","#6c5ce7","#00b894","#fdcb6e","#e17055","#0984e3","#fd79a8"]
+return colors[Math.floor(Math.random()*colors.length)]
+}
+
+function createBalloon(forceLetter=null){
+
+if(gameOver) return
+
+let balloon=document.createElement("div")
+balloon.className="balloon"
+
+let letter=forceLetter || letters[Math.floor(Math.random()*letters.length)]
+balloon.innerText=letter
+
+balloon.style.left=Math.random()*85+"vw"
+balloon.style.background=randomColor()
+
+let speed=4+Math.random()*2
+balloon.style.animationDuration=speed+"s"
+
+balloon.onclick=function(){
+
+if(gameOver) return
+
+balloon.classList.add("pop")
+
+if(letter==="W"){
+foundW=true
+document.getElementById("wStatus").innerText="✔"
+}
+
+if(letter==="X"){
+foundX=true
+document.getElementById("xStatus").innerText="✔"
+}
+
+if(foundW && foundX){
+gameOver=true
+setTimeout(showWin,300)
+}
+
+}
+
+document.getElementById("game").appendChild(balloon)
+
+setTimeout(()=>balloon.remove(),speed*1000)
+
+}
+
+function startGame(){
+
+gameOver=false
+foundW=false
+foundX=false
+
+document.getElementById("wStatus").innerText="❌"
+document.getElementById("xStatus").innerText="❌"
+
+document.getElementById("winScreen").style.display="none"
+
+balloonInterval=setInterval(()=>{
+createBalloon()
+},800)
+
+setTimeout(()=>createBalloon("W"),800)
+setTimeout(()=>createBalloon("X"),1600)
+
+}
+
+function showWin(){
+
+clearInterval(balloonInterval)
+
+document.getElementById("winScreen").style.display="flex"
+
+for(let i=0;i<20;i++){
+
+let fire=document.createElement("div")
+fire.className="firework"
+fire.innerHTML="🎆"
+
+fire.style.left=Math.random()*100+"vw"
+fire.style.top=Math.random()*100+"vh"
+
+document.body.appendChild(fire)
+
+}
+
+}
+
+function restartGame(){
+
+document.querySelectorAll(".balloon").forEach(b=>b.remove())
+document.querySelectorAll(".firework").forEach(f=>f.remove())
+
+startGame()
+
+}
+
+startGame()
+
+</script>
+
+</body>
+</html>
